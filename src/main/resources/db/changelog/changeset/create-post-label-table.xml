@@ -1,0 +1,32 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="6" author="Vladyslav Lunov">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="post_label" />
+            </not>
+        </preConditions>
+        <createTable tableName="post_label">
+            <column name="post_id" type="bigint">
+                <constraints
+                        nullable="false"
+                        foreignKeyName="fk_post_label"
+                        referencedTableName="posts"
+                        referencedColumnNames="id"
+                />
+            </column>
+            <column name="label_id" type="bigint">
+                <constraints
+                        nullable="false"
+                        foreignKeyName="fk_label"
+                        referencedTableName="labels"
+                        referencedColumnNames="id"
+                />
+            </column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>
