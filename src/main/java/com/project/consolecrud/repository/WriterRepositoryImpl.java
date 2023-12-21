@@ -1,70 +1,124 @@
 package com.project.consolecrud.repository;
 
 import com.project.consolecrud.model.Writer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
+import com.project.consolecrud.utils.DBConnector;
+import com.project.consolecrud.utils.SQLQuery;
 import org.springframework.stereotype.Repository;
 
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Repository
 public class WriterRepositoryImpl implements WriterRepository{
-    private JdbcTemplate jdbcTemplate;
-    @Autowired
+    private DBConnector db;
     private PostRepositry postRepositry;
 
-
-    public WriterRepositoryImpl(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public WriterRepositoryImpl(PostRepositry postRepositry, DBConnector db) {
+        this.db = db;
+        this.postRepositry = postRepositry;
     }
 
-    private RowMapper<Writer> rowMapper = (rs, rowNum) -> {
+    private Writer createWriter(ResultSet rs) throws SQLException {
         Writer writer = new Writer();
         writer.setId(rs.getLong("id"));
         writer.setFirstName(rs.getString("first_name"));
         writer.setLastName(rs.getString("last_name"));
         writer.setPosts(postRepositry.findAllByWriterName(writer));
         return writer;
-    };
+    }
 
 
     @Override
     public void save(Writer entity) {
-        jdbcTemplate.update(
-                "INSERT INTO APP.writers (id, first_name, last_name) values (null, ?, ?)",
-                entity.getFirstName(),
-                entity.getLastName()
-        );
+        try (Connection connection = db.getConnection();
+            PreparedStatement pS = connection.prepareStatement(SQLQuery.INSERT_WRITER)) {
+            pS.executeQuery();
+            connection.commit();
+        } catch (SQLException e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     @Override
     public List<Writer> findAll() {
-        return jdbcTemplate.query("SELECT * FROM APP.writers", rowMapper);
+        List<Writer> writers = new ArrayList<>();
+        try (Connection connection = db.getConnection();
+             PreparedStatement pS = connection.prepareStatement(SQLQuery.selectAll("writers"))) {
+            ResultSet rs = pS.executeQuery();
+            while (rs.next()) {
+                writers.add(createWriter(rs));
+            }
+            connection.commit();
+            rs.close();
+            return writers;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return Collections.emptyList();
+        }
     }
 
     @Override
     public Writer findById(Long id) {
-        return jdbcTemplate.queryForObject("SELECT * FROM APP.writers WHERE id = ?",
-                rowMapper, id);
+        try (Connection connection = db.getConnection();
+            PreparedStatement pS = connection.prepareStatement(SQLQuery.selectById("writers"))) {
+            pS.setLong(1, id);
+            ResultSet rs = pS.executeQuery();
+            connection.commit();
+            Writer writer = createWriter(rs);
+            rs.close();
+            return writer;
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
     }
 
     @Override
     public void update(Writer entity) {
-         jdbcTemplate.update(
-                 "UPDATE APP.writers SET first_name = ?, last_name = ? WHERE id = ?",
-                 entity.getFirstName(), entity.getLastName(), entity.getId()
-         );
+        try (Connection connection = db.getConnection();
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.UPDATE_WRITER)) {
+            ps.setString(1, entity.getFirstName());
+            ps.setString(2, entity.getLastName());
+            ps.setLong(3, entity.getId());
+            ResultSet rs = ps.executeQuery();
+            connection.commit();
+            rs.close();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     @Override
     public void deleteById(Long id) {
-        jdbcTemplate.update("DELETE FROM APP.writers WHERE id = ?", id);
+        try (Connection connection = db.getConnection();
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.deleteById("writers"))) {
+            ps.setLong(1, id);
+            ResultSet rs = ps.executeQuery();
+            connection.commit();
+            rs.close();
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     @Override
     public Writer findByName(String firstName, String lastName) {
-        return jdbcTemplate.queryForObject("SELECT * FROM APP.writers WHERE first_name = ?, last_name = ?",
-                rowMapper, firstName, lastName);
+        try (Connection connection = db.getConnection();
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.SELECT_WRITER_BY_NAME)) {
+            ps.setString(1, firstName);
+            ps.setString(2, lastName);
+            ResultSet rs = ps.executeQuery();
+            Writer writer = createWriter(rs);
+            connection.commit();
+            rs.close();
+            return writer;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
     }
 }

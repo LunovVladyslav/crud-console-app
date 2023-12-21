@@ -3,27 +3,28 @@ package com.project.consolecrud.repository;
 import com.project.consolecrud.model.Label;
 import com.project.consolecrud.model.Post;
 import com.project.consolecrud.model.Writer;
+import com.project.consolecrud.utils.DBConnector;
+import com.project.consolecrud.utils.SQLQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Date;
+import java.sql.*;
 import java.time.LocalDate;
 import java.util.List;
 
 @Repository
 public class PostRepositoryImpl implements PostRepositry {
-    private JdbcTemplate jdbcTemplate;
-
-    @Autowired
     private LabelRepository labelRepository;
+    private DBConnector db;
 
-    public PostRepositoryImpl(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public PostRepositoryImpl(LabelRepository labelRepository, DBConnector db) {
+        this.labelRepository = labelRepository;
+        this.db = db;
     }
 
-    private RowMapper<Post> rowMapper = (rs, rowNum) -> {
+    private Post createPost(ResultSet rs) throws SQLException {
         Post post = new Post();
         post.setId(rs.getLong("id"));
         post.setContent(rs.getString("content"));
@@ -31,16 +32,17 @@ public class PostRepositoryImpl implements PostRepositry {
         post.setUpdated(rs.getDate("updated"));
         post.setLabels(labelRepository.findAllByPostId(post));
         return post;
-    };
+    }
 
     @Override
     public void save(Post entity) {
-        jdbcTemplate.update(
-                "INSERT INTO APP.posts (id, content, created, updated) values (null, ?, ?, ?)",
-                entity.getContent(),
-                Date.valueOf(LocalDate.now()),
-                null
-        );
+        try (Connection connection = db.getConnection();
+             PreparedStatement ps = connection.prepareStatement(SQLQuery.INSERT_POST)) {
+            ps.executeQuery();
+            connection.commit();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     @Override
