@@ -67,7 +67,6 @@ public class PostRepositoryImpl implements PostRepositry {
             PreparedStatement ps = connection.prepareStatement(SQLQuery.updatePostStatus(status))) {
             ps.setLong(1 , post.getId());
             ps.executeQuery();
-            update(post);
             connection.commit();
         } catch (SQLException e) {
             System.out.println(e.getMessage());

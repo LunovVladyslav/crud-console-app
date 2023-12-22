@@ -53,7 +53,7 @@ public class WriterService {
         return writer;
     }
 
-    public void update(Writer writer) {
+    public void updateWriter(Writer writer) {
         try {
             repository.update(writer);
             System.out.printf("Writer %s %s successfully updated%n",
@@ -64,7 +64,7 @@ public class WriterService {
         }
     }
 
-    public void deleteById(Long id) {
+    public void deleteWriterById(Long id) {
         try {
             repository.deleteById(id);
             System.out.println("Writer successfully deleted");
