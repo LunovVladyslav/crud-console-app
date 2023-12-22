@@ -33,8 +33,10 @@ public class WriterRepositoryImpl implements WriterRepository{
     @Override
     public void save(Writer entity) {
         try (Connection connection = db.getConnection();
-            PreparedStatement pS = connection.prepareStatement(SQLQuery.INSERT_WRITER)) {
-            pS.executeQuery();
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.INSERT_WRITER)) {
+            ps.setString(1, entity.getFirstName());
+            ps.setString(2, entity.getLastName());
+            ps.executeQuery();
             connection.commit();
         } catch (SQLException e) {
             throw new RuntimeException(e.getMessage());

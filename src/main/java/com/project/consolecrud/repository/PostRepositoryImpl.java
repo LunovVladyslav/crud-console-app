@@ -40,6 +40,8 @@ public class PostRepositoryImpl implements PostRepositry {
     public void save(Post post) {
         try (Connection connection = db.getConnection();
              PreparedStatement ps = connection.prepareStatement(SQLQuery.INSERT_POST)) {
+            ps.setString(1, post.getContent());
+            ps.setDate(2, post.getCreated());
             ps.executeQuery();
             connection.commit();
         } catch (SQLException e) {
@@ -53,7 +55,6 @@ public class PostRepositoryImpl implements PostRepositry {
             PreparedStatement ps = connection.prepareStatement(SQLQuery.INSERT_POST_BY_WRITER)) {
             ps.setLong(1, post.getId());
             ps.setLong(2, writer.getId());
-            save(post);
             connection.commit();
         } catch (SQLException e) {
             System.out.println(e.getMessage());

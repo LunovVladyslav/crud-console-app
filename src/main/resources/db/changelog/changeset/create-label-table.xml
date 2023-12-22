@@ -6,7 +6,7 @@
     <changeSet id="3" author="Vladyslav Lunov">
         <preConditions onFail="MARK_RAN">
             <not>
-                <tableExists tableName="labels" />
+                <tableExists tableName="label" />
             </not>
         </preConditions>
         <createTable tableName="labels">
