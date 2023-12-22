@@ -11,15 +11,12 @@ import java.util.List;
 @Repository
 public class LabelRepositoryImpl implements LabelRepository{
 
-    @Autowired
-    private SpringLiquibase liquibase;
-
-    public LabelRepositoryImpl(SpringLiquibase liquibase) {
-        this.liquibase = liquibase;
+    public LabelRepositoryImpl() {
     }
 
     @Override
     public void save(Label entity) {
+
     }
 
     @Override

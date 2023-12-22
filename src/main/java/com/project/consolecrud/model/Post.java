@@ -6,6 +6,7 @@ import java.util.List;
 public class Post {
     private Long id;
     private String content;
+    private PostStatus status;
     private Date created;
     private Date updated;
     private List<Label> labels;
@@ -24,6 +25,14 @@ public class Post {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public PostStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PostStatus status) {
+        this.status = status;
     }
 
     public Date getCreated() {

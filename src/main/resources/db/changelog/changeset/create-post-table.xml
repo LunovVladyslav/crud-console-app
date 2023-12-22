@@ -12,7 +12,10 @@
             <column name="id" type="bigint" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false" />
             </column>
-            <column name="content" type="varchar(255)">
+            <column name="content" type="text">
+                <constraints nullable="false" />
+            </column>
+            <column name="status" type="varchar(50)">
                 <constraints nullable="false" />
             </column>
             <column name="created" type="timestamp">
