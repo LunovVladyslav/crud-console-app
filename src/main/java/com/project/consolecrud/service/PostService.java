@@ -7,7 +7,6 @@ import com.project.consolecrud.model.Writer;
 import com.project.consolecrud.repository.PostRepositry;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -91,7 +90,7 @@ public class PostService {
     public void deletePostById(Long id) {
         try {
             repository.deleteById(id);
-            System.out.printf("Post with id: %d - successfully deleted%n", id);
+            System.out.printf("Post with id: %d - successfully deleted from DB%n", id);
         }  catch (Exception e) {
             System.out.println("Something wrong, operation aborted!");
             System.out.println(e.getMessage());
