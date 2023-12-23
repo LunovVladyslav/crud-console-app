@@ -19,12 +19,13 @@ public class PostService {
         this.repository = repository;
     }
 
-    public void addPost(Post post) {
+    public void addPost(Post post, Writer writer) {
         try {
             repository.save(post);
-            System.out.println("Writer successfully added.");
+            repository.savePostByWriter(post, writer);
+            System.out.println("Post successfully added.");
         } catch (Exception e) {
-            System.out.println("Something wrong! Writer not added");
+            System.out.println("Something wrong! Post not added");
         }
     }
 

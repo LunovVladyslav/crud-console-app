@@ -1,7 +1,5 @@
 package com.project.consolecrud.view;
 
-import com.project.consolecrud.model.Writer;
-
 import java.util.Scanner;
 
 public class MainAppView {
