@@ -8,5 +8,6 @@
     <include file="changeset/create-label-table.xml" relativeToChangelogFile="true" />
     <include file="changeset/create-post-writer-table.xml" relativeToChangelogFile="true" />
     <include file="changeset/create-post-label-table.xml" relativeToChangelogFile="true" />
+    <include file="changeset/alter-post-table-status-column.xml" relativeToChangelogFile="true" />
 
 </databaseChangeLog>

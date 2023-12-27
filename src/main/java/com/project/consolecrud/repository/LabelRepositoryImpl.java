@@ -19,6 +19,7 @@ import java.util.List;
 public class LabelRepositoryImpl implements LabelRepository{
     private DBConnector db;
 
+
     public LabelRepositoryImpl(DBConnector db) {
         this.db = db;
     }
@@ -35,7 +36,7 @@ public class LabelRepositoryImpl implements LabelRepository{
         try (Connection connection = db.getConnection();
              PreparedStatement ps = connection.prepareStatement(SQLQuery.INSERT_LABEL)) {
             ps.setString(1, entity.getName());
-            ps.executeQuery();
+            ps.executeUpdate();
             connection.commit();
 
         } catch (SQLException e) {
@@ -49,7 +50,7 @@ public class LabelRepositoryImpl implements LabelRepository{
             PreparedStatement ps = connection.prepareStatement(SQLQuery.INSERT_LABEL_BY_POST)) {
             ps.setLong(1, post.getId());
             ps.setLong(2, label.getId());
-            ps.executeQuery();
+            ps.executeUpdate();
             connection.commit();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -58,15 +59,33 @@ public class LabelRepositoryImpl implements LabelRepository{
     }
 
     @Override
+    public Label findLabelByName(String name) {
+        Label label = null;
+        try (Connection connection = db.getConnection();
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.SELECT_LABEL_BY_NAME)) {
+            ps.setString(1, name);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    label = createLabel(rs);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return label;
+    }
+
+    @Override
     public List<Label> findAll() {
         List<Label> labels = new ArrayList<>();
         try (Connection connection = db.getConnection();
-            PreparedStatement ps = connection.prepareStatement(SQLQuery.selectAll("label"))) {
-            ResultSet rs = ps.executeQuery();
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.selectAll("labels"));
+            ResultSet rs = ps.executeQuery()) {
+
             while (rs.next()) {
                 labels.add(createLabel(rs));
             }
-            rs.close();
+
             connection.commit();
             return labels;
         } catch (SQLException e) {
@@ -77,12 +96,18 @@ public class LabelRepositoryImpl implements LabelRepository{
 
     @Override
     public Label findById(Long id) {
+        Label label = null;
         try (Connection connection = db.getConnection();
-            PreparedStatement ps = connection.prepareStatement(SQLQuery.selectById("label"))) {
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.selectById("labels"))) {
+
             ps.setLong(1, id);
-            ResultSet rs = ps.executeQuery();
-            Label label = createLabel(rs);
-            rs.close();
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    label = createLabel(rs);
+                }
+            }
+
             connection.commit();
             return label;
         } catch (SQLException e) {
@@ -96,12 +121,15 @@ public class LabelRepositoryImpl implements LabelRepository{
         List<Label> labels = new ArrayList<>();
         try (Connection connection = db.getConnection();
             PreparedStatement ps = connection.prepareStatement(SQLQuery.SELECT_LABELS_BY_POST)) {
+
             ps.setLong(1, entity.getId());
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                labels.add(createLabel(rs));
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    labels.add(createLabel(rs));
+                }
             }
-            rs.close();
+
             connection.commit();
             return labels;
         } catch (SQLException e) {
@@ -116,7 +144,7 @@ public class LabelRepositoryImpl implements LabelRepository{
             PreparedStatement ps = connection.prepareStatement(SQLQuery.UPDATE_LABEL)) {
             ps.setString(1, entity.getName());
             ps.setLong(2, entity.getId());
-            ps.executeQuery();
+            ps.executeUpdate();
             connection.commit();
 
         } catch (SQLException e) {
@@ -127,9 +155,9 @@ public class LabelRepositoryImpl implements LabelRepository{
     @Override
     public void deleteById(Long id) {
         try (Connection connection = db.getConnection();
-            PreparedStatement ps = connection.prepareStatement(SQLQuery.deleteById("label"))) {
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.deleteById("labels"))) {
             ps.setLong(1, id);
-            ps.executeQuery();
+            ps.executeUpdate();
             connection.commit();
         } catch (SQLException e) {
             System.out.println(e.getMessage());

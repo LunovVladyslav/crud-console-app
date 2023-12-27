@@ -1,6 +1,7 @@
 package com.project.consolecrud.controller;
 
 import com.project.consolecrud.model.Label;
+import com.project.consolecrud.model.Post;
 import com.project.consolecrud.service.LabelService;
 import org.springframework.stereotype.Controller;
 
@@ -18,12 +19,20 @@ public class LabelController {
         this.service.addLabel(label);
     }
 
+    public void addLabelToPost(Label label, Post post) {
+        this.service.addLabelForPost(label, post);
+    }
+
     public List<Label> findAllLabels() {
         return this.service.findAll();
     }
 
     public Label findLabelById(Long id) {
         return this.service.findById(id);
+    }
+
+    public Label findLabelByName(String name) {
+        return this.service.findByName(name);
     }
 
     public void updateLabel(Label label) {

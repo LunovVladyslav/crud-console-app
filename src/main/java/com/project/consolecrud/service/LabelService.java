@@ -1,6 +1,7 @@
 package com.project.consolecrud.service;
 
 import com.project.consolecrud.model.Label;
+import com.project.consolecrud.model.Post;
 import com.project.consolecrud.repository.LabelRepository;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,14 @@ public class LabelService {
         }
     }
 
+    public void addLabelForPost(Label label, Post post) {
+        try {
+            repository.saveLabelByPost(label ,post);
+        } catch (Exception e) {
+            System.out.println("Something wrong, operation aborted!");
+        }
+    }
+
     public List<Label> findAll() {
         List<Label> labels = repository.findAll();
         if (labels.isEmpty()) {
@@ -37,8 +46,15 @@ public class LabelService {
     public Label findById(Long id) {
         Label label = repository.findById(id);
         if (Objects.isNull(label)) {
-            System.out.println("Label don't found");
-            return null;
+            System.out.println("Label not found");
+        }
+        return label;
+    }
+
+    public Label findByName(String name) {
+        Label label = repository.findLabelByName(name);
+        if (Objects.isNull(label)) {
+            System.out.println("Label not found");
         }
         return label;
     }

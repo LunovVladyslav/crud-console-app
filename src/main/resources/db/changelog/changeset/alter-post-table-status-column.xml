@@ -1,0 +1,22 @@
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <changeSet id="7" author="Vladyslav Lunov">
+        <modifyDataType
+                tableName="posts"
+                columnName="status"
+                newDataType="VARCHAR(255)"
+        />
+        <addDefaultValue
+                tableName="posts"
+                columnName="status"
+                defaultValue="UNDER_REVIEW"
+                columnDataType="VARCHAR(255)"
+        />
+    </changeSet>
+
+</databaseChangeLog>
+
+
+

@@ -58,4 +58,16 @@ public class Post {
     public void setLabels(List<Label> labels) {
         this.labels = labels;
     }
+
+    @Override
+    public String toString() {
+        return "Post{" +
+                "id=" + id +
+                ", content='" + content + '\'' +
+                ", status=" + status +
+                ", created=" + created +
+                ", updated=" + updated +
+                ", labels=" + labels +
+                '}';
+    }
 }

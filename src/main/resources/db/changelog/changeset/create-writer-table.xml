@@ -4,7 +4,7 @@
                    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="1" author="Vladyslav Lunov">
-        <preConditions onFail="MARK_RAN">
+        <preConditions>
             <not>
                 <tableExists tableName="writers" />
             </not>

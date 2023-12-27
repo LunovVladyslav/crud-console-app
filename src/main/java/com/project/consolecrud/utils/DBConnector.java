@@ -7,28 +7,21 @@ import java.sql.SQLException;
 
 @Component
 public class DBConnector {
-    private String URL = "jdbc:mysql://localhost:3306/testCrud";
-    private static String DRIVER = "com.mysql.cj.jdbc.Driver";
+    private String URL = "jdbc:mysql://localhost:3306/CRUD_APP";
+    private String DRIVER = "com.mysql.cj.jdbc.Driver";
     private String USERNAME = "root";
     private String PASSWORD = "password";
 
-    static {
+
+    public Connection getConnection() throws SQLException {
         try {
             Class.forName(DRIVER);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-    }
-
-    public Connection getConnection() {
-        try {
-            Connection connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
-            connection.setAutoCommit(false);
-            return connection;
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-            return null;
-        }
+        Connection connection = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+        connection.setAutoCommit(false);
+        return connection;
     }
 
 

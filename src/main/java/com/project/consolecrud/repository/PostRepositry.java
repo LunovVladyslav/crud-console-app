@@ -9,7 +9,9 @@ import java.util.List;
 
 public interface PostRepositry extends GenericRepository<Post, Long> {
     List<Post> findAllByWriterName(Writer writer);
+    Post findPostByContent(String content);
     List<Label> findLabelsByPostId(Post post);
+    List<Post> findPostByLabelId(Label label);
     void savePostByWriter(Post post, Writer writer);
     void updatePostStatus(PostStatus status, Post post);
 }

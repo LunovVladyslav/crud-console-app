@@ -19,13 +19,20 @@ public class PostService {
         this.repository = repository;
     }
 
-    public void addPost(Post post, Writer writer) {
+    public void addPost(Post post) {
         try {
             repository.save(post);
-            repository.savePostByWriter(post, writer);
             System.out.println("Post successfully added.");
         } catch (Exception e) {
             System.out.println("Something wrong! Post not added");
+        }
+    }
+
+    public void addPostWriterDep(Post post, Writer writer) {
+        try {
+            repository.savePostByWriter(post, writer);
+        } catch (Exception e) {
+            System.out.println("post_writer dependency not added!");
         }
     }
 
@@ -33,7 +40,6 @@ public class PostService {
         List<Post> postList = repository.findAll();
 
         if (postList.isEmpty()) {
-            System.out.println("Writers not found");
             return Collections.emptyList();
         }
         return postList;
@@ -57,13 +63,31 @@ public class PostService {
         return post;
     }
 
+    public Post findByContent(String content) {
+        Post post = repository.findPostByContent(content);
+        if (Objects.isNull(post)) {
+            System.out.println("This post is not exist");
+            return null;
+        }
+        return post;
+    }
+
     public List<Label> findLabelsForPost(Post post) {
         List<Label> labels = repository.findLabelsByPostId(post);
         if (labels.isEmpty()) {
-            System.out.printf("Post with id = %d don't have labels yet.", post.getId());
+            System.out.printf("Post with id = %d don't have labels yet.%n", post.getId());
             return Collections.emptyList();
         }
         return labels;
+    }
+
+    public List<Post> findPostsByLabelId(Label label) {
+        List<Post> posts = repository.findPostByLabelId(label);
+        if (posts.isEmpty()) {
+            System.out.printf("This label with id: %d dont added to any post%n", label.getId());
+            return Collections.emptyList();
+        }
+        return posts;
     }
 
     public void updatePost(Post post) {

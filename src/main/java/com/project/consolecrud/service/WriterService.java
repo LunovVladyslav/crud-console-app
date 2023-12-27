@@ -1,7 +1,9 @@
 package com.project.consolecrud.service;
 
+import com.project.consolecrud.model.Post;
 import com.project.consolecrud.model.Writer;
 import com.project.consolecrud.repository.WriterRepository;
+import com.project.consolecrud.repository.WriterRepositoryImpl;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -48,6 +50,15 @@ public class WriterService {
         Writer writer = repository.findById(id);
         if (Objects.isNull(writer)) {
             System.out.println("Writer not found");
+            return null;
+        }
+        return writer;
+    }
+
+    public Writer findWriterByPost(Post post) {
+        Writer writer = repository.findWriterByPost(post);
+        if (Objects.isNull(writer)) {
+            System.out.println("Posts not found");
             return null;
         }
         return writer;

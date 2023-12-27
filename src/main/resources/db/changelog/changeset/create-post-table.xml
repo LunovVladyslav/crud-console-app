@@ -3,7 +3,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
     <changeSet id="2" author="Vladyslav Lunov">
-        <preConditions onFail="MARK_RAN">
+        <preConditions>
             <not>
                 <tableExists tableName="posts" />
             </not>

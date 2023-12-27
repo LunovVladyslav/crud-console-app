@@ -1,5 +1,6 @@
 package com.project.consolecrud.controller;
 
+import com.project.consolecrud.model.Post;
 import com.project.consolecrud.model.Writer;
 import com.project.consolecrud.service.WriterService;
 import org.springframework.stereotype.Controller;
@@ -25,6 +26,10 @@ public class WriterController {
 
     public Writer findWriterById(Long id) {
         return this.service.findById(id);
+    }
+
+    public Writer findWriterByPostId(Post post) {
+        return this.service.findWriterByPost(post);
     }
 
     public Writer findWriterByName(String fname, String lname) {

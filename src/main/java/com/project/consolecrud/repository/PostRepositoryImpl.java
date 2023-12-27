@@ -9,6 +9,7 @@ import com.project.consolecrud.utils.SQLQuery;
 
 import org.springframework.stereotype.Repository;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ public class PostRepositoryImpl implements PostRepositry {
     private LabelRepository labelRepository;
     private DBConnector db;
 
-    public PostRepositoryImpl(WriterRepository writerRepository, LabelRepository labelRepository, DBConnector db) {
+    public PostRepositoryImpl(LabelRepository labelRepository, DBConnector db) {
         this.labelRepository = labelRepository;
         this.db = db;
     }
@@ -41,8 +42,9 @@ public class PostRepositoryImpl implements PostRepositry {
         try (Connection connection = db.getConnection();
              PreparedStatement ps = connection.prepareStatement(SQLQuery.INSERT_POST)) {
             ps.setString(1, post.getContent());
-            ps.setDate(2, post.getCreated());
-            ps.executeQuery();
+            ps.setString(2, post.getStatus().getValue());
+            ps.setDate(3, post.getCreated());
+            ps.executeUpdate();
             connection.commit();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -55,6 +57,7 @@ public class PostRepositoryImpl implements PostRepositry {
             PreparedStatement ps = connection.prepareStatement(SQLQuery.INSERT_POST_BY_WRITER)) {
             ps.setLong(1, post.getId());
             ps.setLong(2, writer.getId());
+            ps.executeUpdate();
             connection.commit();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -65,9 +68,11 @@ public class PostRepositoryImpl implements PostRepositry {
     public void updatePostStatus(PostStatus status, Post post) {
         try (Connection connection = db.getConnection();
             PreparedStatement ps = connection.prepareStatement(SQLQuery.updatePostStatus(status))) {
+
             ps.setLong(1 , post.getId());
-            ps.executeQuery();
+            ps.executeUpdate();
             connection.commit();
+
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
@@ -77,14 +82,15 @@ public class PostRepositoryImpl implements PostRepositry {
     public List<Post> findAll() {
         List<Post> posts = new ArrayList<>();
         try (Connection connection = db.getConnection();
-            PreparedStatement ps = connection.prepareStatement(SQLQuery.selectAll("posts"))) {
-            ResultSet rs = ps.executeQuery();
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.selectAll("posts"));
+            ResultSet rs = ps.executeQuery()) {
+
             while (rs.next()) {
                 posts.add(createPost(rs));
             }
             connection.commit();
-            rs.close();
             return posts;
+
         } catch (SQLException e) {
             System.out.println(e.getMessage());
             return Collections.emptyList();
@@ -93,19 +99,27 @@ public class PostRepositoryImpl implements PostRepositry {
 
     @Override
     public Post findById(Long id) {
+        Post post = null;
         try (Connection connection = db.getConnection();
             PreparedStatement ps = connection.prepareStatement(SQLQuery.selectById("posts"))) {
+
             ps.setLong(1, id);
-            ResultSet rs = ps.executeQuery();
-            Post post = createPost(rs);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    post = createPost(rs);
+                }
+            }
+
             connection.commit();
-            rs.close();
             return post;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
-            return null;
+            return post;
         }
     }
+
+
 
     @Override
     public void update(Post entity) {
@@ -113,7 +127,7 @@ public class PostRepositoryImpl implements PostRepositry {
             PreparedStatement ps = connection.prepareStatement(SQLQuery.UPDATE_POST)) {
             ps.setString(1, entity.getContent());
             ps.setDate(2, Date.valueOf(LocalDate.now()));
-            ps.executeQuery();
+            ps.executeUpdate();
             connection.commit();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -127,7 +141,7 @@ public class PostRepositoryImpl implements PostRepositry {
         try (Connection connection = db.getConnection();
             PreparedStatement ps = connection.prepareStatement(SQLQuery.deleteById("posts"))) {
             ps.setLong(1 ,id);
-            ps.executeQuery();
+            ps.executeUpdate();
             connection.commit();
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -139,18 +153,17 @@ public class PostRepositoryImpl implements PostRepositry {
         List<Post> posts = new ArrayList<>();
         try (Connection connection = db.getConnection();
             PreparedStatement ps = connection.prepareStatement(SQLQuery.SELECT_POSTS_BY_WRITER)) {
+
             ps.setString(1, writer.getFirstName());
             ps.setString( 2, writer.getLastName());
 
-            ResultSet rs = ps.executeQuery();
-
-            while (rs.next()) {
-                posts.add(createPost(rs));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    posts.add(createPost(rs));
+                }
             }
 
             connection.commit();
-            rs.close();
-
             return posts;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -159,7 +172,44 @@ public class PostRepositoryImpl implements PostRepositry {
     }
 
     @Override
+    public Post findPostByContent(String content) {
+        Post post = null;
+        try (Connection connection = db.getConnection();
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.SELECT_POST_BY_CONTENT)) {
+            ps.setString(1, content);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    post = createPost(rs);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return  post;
+    }
+
+    @Override
     public List<Label> findLabelsByPostId(Post entity) {
         return labelRepository.findAllByPostId(entity);
+    }
+
+    @Override
+    public List<Post> findPostByLabelId(Label label) {
+        List<Post> postList = new ArrayList<>();
+        try (Connection connection = db.getConnection();
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.SELECT_POSTS_BY_LABEL)) {
+            ps.setLong(1, label.getId());
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    postList.add(createPost(rs));
+                }
+            }
+            connection.commit();
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return postList;
     }
 }
