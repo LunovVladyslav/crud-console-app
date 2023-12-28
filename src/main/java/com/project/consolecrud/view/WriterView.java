@@ -1,6 +1,8 @@
 package com.project.consolecrud.view;
 
+import com.project.consolecrud.controller.PostController;
 import com.project.consolecrud.controller.WriterController;
+import com.project.consolecrud.model.Post;
 import com.project.consolecrud.model.Writer;
 import com.project.consolecrud.utils.ConsoleService;
 import org.springframework.stereotype.Component;
@@ -11,13 +13,22 @@ import java.util.Scanner;
 
 @Component
 public class WriterView {
-    private WriterController controller;
+    private WriterController writerController;
+    private PostController postController;
+    private PostView postView;
     private ConsoleService service;
 
 
-    public WriterView(WriterController controller, ConsoleService service) {
+    public WriterView(
+            WriterController writerController,
+            PostController postController,
+            PostView postView,
+            ConsoleService service
+    ) {
         this.service = service;
-        this.controller = controller;
+        this.postView = postView;
+        this.writerController = writerController;
+        this.postController = postController;
     }
 
     public void start() {
@@ -49,8 +60,8 @@ public class WriterView {
         }
     }
 
-    public void showAllWritersList() {
-        List<Writer> writerList = this.controller.findAllWriters();
+    private void showAllWritersList() {
+        List<Writer> writerList = this.writerController.findAllWriters();
         if (writerList.isEmpty()) {
             System.out.println("Any writer not found!");
             return;
@@ -66,7 +77,7 @@ public class WriterView {
         System.out.println(" ---------------------------");
     }
 
-    public void addNewWriter() {
+    private void addNewWriter() {
         try {
             System.out.println("Enter the writer's first name:");
             String firstName = service.readLine();
@@ -75,14 +86,14 @@ public class WriterView {
             Writer writer = new Writer();
             writer.setFirstName(firstName);
             writer.setLastName(lastName);
-            this.controller.addWriter(writer);
+            this.writerController.addWriter(writer);
         } catch (Exception e) {
             System.out.println("Writer can't be added");
             System.out.println(e.getMessage());
         }
     }
 
-    public void redactWriter() {
+    private void redactWriter() {
         try {
             Writer writer = findWriter();
 
@@ -100,7 +111,8 @@ public class WriterView {
                 Choose option:
                 1. Update writer name;
                 2. Delete writer.
-                3. Back%n
+                3. Show writer post(s).
+                0. Back
                 """, writer.getId(), writer.getFirstName(), writer.getLastName());
 
                int input = service.readInt();
@@ -110,14 +122,20 @@ public class WriterView {
                        writer.setFirstName(service.readLine());
                        System.out.println("Enter new writer last name: ");
                        writer.setLastName(service.readLine());
-                       this.controller.updateWriter(writer);
+                       this.writerController.updateWriter(writer);
                        return;
                    }
                    case 2 -> {
-                       this.controller.deleteWriter(writer);
+                       this.writerController.deleteWriter(writer);
                        return;
                    }
-                   case 3 ->{
+                   case 3 -> {
+                       List <Post> posts = postController.findPostByWriter(writer);
+                       writer.setPosts(posts);
+                       postView.printPosts(posts);
+                       return;
+                   }
+                   case 0 ->{
                        return;
                    }
                    default -> System.out.println("Not correct option!");
@@ -128,8 +146,8 @@ public class WriterView {
         }
     }
 
-    public Writer findWriter() {
-        Writer writer = new Writer();
+    private Writer findWriter() {
+        Writer writer = null;
         try {
             while (true) {
                 System.out.println("""
@@ -145,26 +163,30 @@ public class WriterView {
                     case 1 -> {
                         System.out.println("Enter writer id: ");
                         Long id = Long.parseLong(service.readLine());
-                        writer = this.controller.findWriterById(id);
+                        writer = this.writerController.findWriterById(id);
+                        writer.setPosts(this.postController.findPostByWriter(writer));
+
                     }
                     case 2 -> {
                         System.out.println("Enter writer first name: ");
                         String firstName = service.readLine();
                         System.out.println("Enter writer last name: ");
                         String lastName = service.readLine();
-                        writer = this.controller.findWriterByName(firstName, lastName);
+                        writer = this.writerController.findWriterByName(firstName, lastName);
+                        writer.setPosts(this.postController.findPostByWriter(writer));
                     }
                     case 3 -> {
                         return writer;
                     }
                     default -> System.out.println("Not correct option");
                 }
-                return writer;
+                if (!Objects.isNull(writer)) {
+                    break;
+                }
             }
         } catch (Exception e) {
             System.out.println("Something wrong!");
-            return null;
         }
-
+        return writer;
     }
  }

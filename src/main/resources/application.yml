@@ -1,9 +1,11 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/CRUD_APP
+    url: jdbc:mysql://localhost:3306/${application.database}
     username: root
     password: password
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
     enabled: true
+application:
+  database: APPLICATION

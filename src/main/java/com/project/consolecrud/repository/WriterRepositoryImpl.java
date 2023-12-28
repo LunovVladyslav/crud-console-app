@@ -15,10 +15,12 @@ import java.util.List;
 public class WriterRepositoryImpl implements WriterRepository{
     private DBConnector db;
     private PostRepositry postRepositry;
+    private SQLQuery sqlQuery;
 
-    public WriterRepositoryImpl(PostRepositry postRepositry, DBConnector db) {
+    public WriterRepositoryImpl(PostRepositry postRepositry, DBConnector db, SQLQuery sqlQuery) {
         this.db = db;
         this.postRepositry = postRepositry;
+        this.sqlQuery = sqlQuery;
     }
 
     private Writer createWriter(ResultSet rs) throws SQLException {
@@ -34,7 +36,7 @@ public class WriterRepositoryImpl implements WriterRepository{
     @Override
     public void save(Writer entity) {
         try (Connection connection = db.getConnection();
-            PreparedStatement ps = connection.prepareStatement(SQLQuery.INSERT_WRITER)) {
+            PreparedStatement ps = connection.prepareStatement(sqlQuery.INSERT_WRITER)) {
             ps.setString(1, entity.getFirstName());
             ps.setString(2, entity.getLastName());
             ps.executeUpdate();
@@ -48,7 +50,7 @@ public class WriterRepositoryImpl implements WriterRepository{
     public List<Writer> findAll() {
         List<Writer> writers = new ArrayList<>();
         try (Connection connection = db.getConnection();
-             PreparedStatement ps = connection.prepareStatement(SQLQuery.selectAll("writers"));
+             PreparedStatement ps = connection.prepareStatement(sqlQuery.selectAll("writers"));
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
@@ -67,7 +69,7 @@ public class WriterRepositoryImpl implements WriterRepository{
     public Writer findById(Long id) {
         Writer writer = null;
         try (Connection connection = db.getConnection();
-             PreparedStatement ps = connection.prepareStatement(SQLQuery.selectById("writers"))) {
+             PreparedStatement ps = connection.prepareStatement(sqlQuery.selectById("writers"))) {
 
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
@@ -85,7 +87,7 @@ public class WriterRepositoryImpl implements WriterRepository{
     @Override
     public void update(Writer entity) {
         try (Connection connection = db.getConnection();
-            PreparedStatement ps = connection.prepareStatement(SQLQuery.UPDATE_WRITER)) {
+            PreparedStatement ps = connection.prepareStatement(sqlQuery.UPDATE_WRITER)) {
             ps.setString(1, entity.getFirstName());
             ps.setString(2, entity.getLastName());
             ps.setLong(3, entity.getId());
@@ -99,7 +101,7 @@ public class WriterRepositoryImpl implements WriterRepository{
     @Override
     public void deleteById(Long id) {
         try (Connection connection = db.getConnection();
-            PreparedStatement ps = connection.prepareStatement(SQLQuery.deleteById("writers"))) {
+            PreparedStatement ps = connection.prepareStatement(sqlQuery.deleteById("writers"))) {
             ps.setLong(1, id);
             ps.executeUpdate();
             connection.commit();
@@ -113,7 +115,7 @@ public class WriterRepositoryImpl implements WriterRepository{
     public Writer findByName(String firstName, String lastName) {
         Writer writer = null;
         try (Connection connection = db.getConnection();
-            PreparedStatement ps = connection.prepareStatement(SQLQuery.SELECT_WRITER_BY_NAME)) {
+            PreparedStatement ps = connection.prepareStatement(sqlQuery.SELECT_WRITER_BY_NAME)) {
 
             ps.setString(1, firstName);
             ps.setString(2, lastName);
@@ -135,7 +137,7 @@ public class WriterRepositoryImpl implements WriterRepository{
     public Writer findWriterByPost(Post post) {
         Writer writer = null;
         try (Connection connection = db.getConnection();
-            PreparedStatement ps = connection.prepareStatement(SQLQuery.SELECT_WRITER_BY_POST)) {
+            PreparedStatement ps = connection.prepareStatement(sqlQuery.SELECT_WRITER_BY_POST)) {
 
             ps.setLong(1, post.getId());
             try (ResultSet rs = ps.executeQuery()) {

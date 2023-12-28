@@ -67,7 +67,7 @@ public class PostView {
 
     }
 
-    public void showAllPosts() {
+    private void showAllPosts() {
         List<Post> posts = this.postController.findAllPosts();
 
         if (posts.isEmpty()) {
@@ -102,7 +102,7 @@ public class PostView {
                                 Status: %s.
                                 Date: %s
                                 Label: %s.
-                                %n""",
+                                """,
                         writer.getFirstName(), writer.getLastName(),
                         post.getId(),
                         post.getContent(), post.getStatus(),
@@ -113,7 +113,7 @@ public class PostView {
         System.out.println("----------------------------");
     }
 
-    public void addNewPost() {
+    private void addNewPost() {
         Post post = new Post();
         Writer writer = null;
         try {
@@ -146,7 +146,7 @@ public class PostView {
         }
     }
 
-    public void reductPost() {
+    private void reductPost() {
         Post post = findPost();
         if (Objects.isNull(post)) {
             return;
@@ -159,7 +159,6 @@ public class PostView {
                 3. Delete post.
                 4. Add labels for the post.
                 0. Back.
-                
                 User:
                 """;
 
@@ -177,6 +176,9 @@ public class PostView {
                     System.out.println("Post with ID: %d successfully deleted".formatted(post.getId()));
                 }
                 case "4" -> addLabelsForPost(post);
+                case "0" -> {
+                    return;
+                }
                 default -> System.out.println("You choose not correct option!");
             }
         }
@@ -209,7 +211,8 @@ public class PostView {
             } else if (input.equals("end")) {
                 return;
             }
-            label.setName(input);
+            label = new Label();
+            label.setName(input.toLowerCase());
             labelController.createNewLabel(label);
             label = labelController.findLabelByName(input);
             labelController.addLabelToPost(label, post);
@@ -237,13 +240,11 @@ public class PostView {
                         System.out.println("Enter post ID:");
                         String id = service.readLine();
                         post = postController.findPostById(Long.valueOf(id));
-                        return post;
                     }
                     case "2" -> {
                         System.out.println("Enter post text:");
                         String content = service.readText();
                         post = postController.findByPostContent(content);
-                        return post;
                     }
                     case "3" -> {
                         System.out.println("Enter writer first name:");
@@ -262,10 +263,14 @@ public class PostView {
                         System.out.println("You choose not correct option!");
                     }
                 }
+                if (!Objects.isNull(post)) {
+                    break;
+                }
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 System.out.println("Error in finding post time!");
             }
         }
+        return post;
     }
 }

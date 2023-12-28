@@ -1,5 +1,6 @@
 package com.project.consolecrud.utils;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -7,9 +8,14 @@ import java.sql.SQLException;
 
 @Component
 public class DBConnector {
-    private String URL = "jdbc:mysql://localhost:3306/CRUD_APP";
+
+    @Value("${spring.datasource.url}")
+    private String URL = "jdbc:mysql://localhost:3306/APPLICATION";
+    @Value("${spring.datasource.driver-class-name}")
     private String DRIVER = "com.mysql.cj.jdbc.Driver";
+    @Value("${spring.datasource.username}")
     private String USERNAME = "root";
+    @Value("${spring.datasource.password}")
     private String PASSWORD = "password";
 
 
@@ -23,6 +29,4 @@ public class DBConnector {
         connection.setAutoCommit(false);
         return connection;
     }
-
-
 }
