@@ -43,6 +43,8 @@ public class MainAppView {
                     case "2" -> postView.start();
                     case "3" -> labelView.start();
                     case "0" -> {
+                        System.out.println("Good bye!");
+                        consoleService.closeScanner();
                         return;
                     }
                     default -> System.out.println("Not correct option...");

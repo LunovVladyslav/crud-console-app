@@ -3,6 +3,7 @@ package com.project.consolecrud.repository;
 import com.project.consolecrud.model.Label;
 import com.project.consolecrud.model.Post;
 import com.project.consolecrud.utils.DBConnector;
+import com.project.consolecrud.utils.Mapper;
 import com.project.consolecrud.utils.SQLQuery;
 
 import org.springframework.stereotype.Repository;
@@ -18,25 +19,18 @@ import java.util.List;
 @Repository
 public class LabelRepositoryImpl implements LabelRepository{
     private DBConnector db;
-    private SQLQuery sqlQuery;
+    private Mapper mapper;
 
-
-    public LabelRepositoryImpl(DBConnector db, SQLQuery sqlQuery) {
+    public LabelRepositoryImpl(DBConnector db, Mapper mspper) {
         this.db = db;
-        this.sqlQuery = sqlQuery;
+        this.mapper = mspper;
     }
 
-    private Label createLabel(ResultSet rs) throws SQLException {
-        Label label = new Label();
-        label.setId(rs.getLong("id"));
-        label.setName(rs.getString("name"));
-        return label;
-    }
 
     @Override
-    public void save(Label entity) {
+    public Label save(Label entity) {
         try (Connection connection = db.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sqlQuery.INSERT_LABEL)) {
+             PreparedStatement ps = connection.prepareStatement(SQLQuery.INSERT_LABEL)) {
             ps.setString(1, entity.getName());
             ps.executeUpdate();
             connection.commit();
@@ -44,12 +38,13 @@ public class LabelRepositoryImpl implements LabelRepository{
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+        return findLabelByName(entity.getName());
     }
 
     @Override
     public void saveLabelByPost(Label label, Post post) {
         try (Connection connection = db.getConnection();
-            PreparedStatement ps = connection.prepareStatement(sqlQuery.INSERT_LABEL_BY_POST)) {
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.INSERT_LABEL_BY_POST)) {
             ps.setLong(1, post.getId());
             ps.setLong(2, label.getId());
             ps.executeUpdate();
@@ -64,11 +59,11 @@ public class LabelRepositoryImpl implements LabelRepository{
     public Label findLabelByName(String name) {
         Label label = null;
         try (Connection connection = db.getConnection();
-            PreparedStatement ps = connection.prepareStatement(sqlQuery.SELECT_LABEL_BY_NAME)) {
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.SELECT_LABEL_BY_NAME)) {
             ps.setString(1, name);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    label = createLabel(rs);
+                    label = mapper.createLabel(rs);
                 }
             }
         } catch (SQLException e) {
@@ -81,11 +76,11 @@ public class LabelRepositoryImpl implements LabelRepository{
     public List<Label> findAll() {
         List<Label> labels = new ArrayList<>();
         try (Connection connection = db.getConnection();
-            PreparedStatement ps = connection.prepareStatement(sqlQuery.selectAll("labels"));
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.selectAll("labels"));
             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                labels.add(createLabel(rs));
+                labels.add(mapper.createLabel(rs));
             }
 
             connection.commit();
@@ -100,13 +95,13 @@ public class LabelRepositoryImpl implements LabelRepository{
     public Label findById(Long id) {
         Label label = null;
         try (Connection connection = db.getConnection();
-            PreparedStatement ps = connection.prepareStatement(sqlQuery.selectById("labels"))) {
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.selectById("labels"))) {
 
             ps.setLong(1, id);
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    label = createLabel(rs);
+                    label = mapper.createLabel(rs);
                 }
             }
 
@@ -122,13 +117,13 @@ public class LabelRepositoryImpl implements LabelRepository{
     public List<Label> findAllByPostId(Post entity) {
         List<Label> labels = new ArrayList<>();
         try (Connection connection = db.getConnection();
-            PreparedStatement ps = connection.prepareStatement(sqlQuery.SELECT_LABELS_BY_POST)) {
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.SELECT_LABELS_BY_POST)) {
 
             ps.setLong(1, entity.getId());
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    labels.add(createLabel(rs));
+                    labels.add(mapper.createLabel(rs));
                 }
             }
 
@@ -141,9 +136,9 @@ public class LabelRepositoryImpl implements LabelRepository{
     }
 
     @Override
-    public void update(Label entity) {
+    public Label update(Label entity) {
         try (Connection connection = db.getConnection();
-            PreparedStatement ps = connection.prepareStatement(sqlQuery.UPDATE_LABEL)) {
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.UPDATE_LABEL)) {
             ps.setString(1, entity.getName());
             ps.setLong(2, entity.getId());
             ps.executeUpdate();
@@ -152,12 +147,13 @@ public class LabelRepositoryImpl implements LabelRepository{
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+        return findById(entity.getId());
     }
 
     @Override
     public void deleteById(Long id) {
         try (Connection connection = db.getConnection();
-            PreparedStatement ps = connection.prepareStatement(sqlQuery.deleteById("labels"))) {
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.deleteById("labels"))) {
             ps.setLong(1, id);
             ps.executeUpdate();
             connection.commit();

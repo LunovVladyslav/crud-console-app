@@ -1,5 +1,6 @@
 package com.project.consolecrud.repository;
 
+import com.project.consolecrud.utils.Mapper;
 import com.project.consolecrud.model.Post;
 import com.project.consolecrud.model.Writer;
 import com.project.consolecrud.utils.DBConnector;
@@ -15,28 +16,20 @@ import java.util.List;
 public class WriterRepositoryImpl implements WriterRepository{
     private DBConnector db;
     private PostRepositry postRepositry;
-    private SQLQuery sqlQuery;
+    private Mapper mapper;
 
-    public WriterRepositoryImpl(PostRepositry postRepositry, DBConnector db, SQLQuery sqlQuery) {
+    public WriterRepositoryImpl(PostRepositry postRepositry, DBConnector db, Mapper mapper) {
         this.db = db;
         this.postRepositry = postRepositry;
-        this.sqlQuery = sqlQuery;
-    }
-
-    private Writer createWriter(ResultSet rs) throws SQLException {
-        Writer writer = new Writer();
-        writer.setId(rs.getLong("id"));
-        writer.setFirstName(rs.getString("first_name"));
-        writer.setLastName(rs.getString("last_name"));
-        writer.setPosts(postRepositry.findAllByWriterName(writer));
-        return writer;
+        this.mapper = mapper;
     }
 
 
     @Override
-    public void save(Writer entity) {
+    public Writer save(Writer entity) {
+
         try (Connection connection = db.getConnection();
-            PreparedStatement ps = connection.prepareStatement(sqlQuery.INSERT_WRITER)) {
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.INSERT_WRITER)) {
             ps.setString(1, entity.getFirstName());
             ps.setString(2, entity.getLastName());
             ps.executeUpdate();
@@ -44,17 +37,20 @@ public class WriterRepositoryImpl implements WriterRepository{
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
+        Writer writer = findByName(entity.getFirstName(), entity.getLastName());
+        writer.setPosts(postRepositry.findAllByWriterName(writer));
+        return writer;
     }
 
     @Override
     public List<Writer> findAll() {
         List<Writer> writers = new ArrayList<>();
         try (Connection connection = db.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sqlQuery.selectAll("writers"));
+             PreparedStatement ps = connection.prepareStatement(SQLQuery.selectAll("writers"));
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                writers.add(createWriter(rs));
+                writers.add(mapper.createWriter(rs));
             }
             connection.commit();
             return writers;
@@ -69,12 +65,13 @@ public class WriterRepositoryImpl implements WriterRepository{
     public Writer findById(Long id) {
         Writer writer = null;
         try (Connection connection = db.getConnection();
-             PreparedStatement ps = connection.prepareStatement(sqlQuery.selectById("writers"))) {
+             PreparedStatement ps = connection.prepareStatement(SQLQuery.selectById("writers"))) {
 
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    writer = createWriter(rs);
+                    writer = mapper.createWriter(rs);
+                    writer.setPosts(postRepositry.findAllByWriterName(writer));
                 }
             }
             connection.commit();
@@ -85,9 +82,9 @@ public class WriterRepositoryImpl implements WriterRepository{
     }
 
     @Override
-    public void update(Writer entity) {
+    public Writer update(Writer entity) {
         try (Connection connection = db.getConnection();
-            PreparedStatement ps = connection.prepareStatement(sqlQuery.UPDATE_WRITER)) {
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.UPDATE_WRITER)) {
             ps.setString(1, entity.getFirstName());
             ps.setString(2, entity.getLastName());
             ps.setLong(3, entity.getId());
@@ -96,12 +93,13 @@ public class WriterRepositoryImpl implements WriterRepository{
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
+        return findById(entity.getId());
     }
 
     @Override
     public void deleteById(Long id) {
         try (Connection connection = db.getConnection();
-            PreparedStatement ps = connection.prepareStatement(sqlQuery.deleteById("writers"))) {
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.deleteById("writers"))) {
             ps.setLong(1, id);
             ps.executeUpdate();
             connection.commit();
@@ -115,14 +113,15 @@ public class WriterRepositoryImpl implements WriterRepository{
     public Writer findByName(String firstName, String lastName) {
         Writer writer = null;
         try (Connection connection = db.getConnection();
-            PreparedStatement ps = connection.prepareStatement(sqlQuery.SELECT_WRITER_BY_NAME)) {
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.SELECT_WRITER_BY_NAME)) {
 
             ps.setString(1, firstName);
             ps.setString(2, lastName);
 
             try (ResultSet rs = ps.executeQuery()){
                 if (rs.next()) {
-                    writer = createWriter(rs);
+                    writer = mapper.createWriter(rs);
+                    writer.setPosts(postRepositry.findAllByWriterName(writer));
                 }
             }
             connection.commit();
@@ -137,12 +136,13 @@ public class WriterRepositoryImpl implements WriterRepository{
     public Writer findWriterByPost(Post post) {
         Writer writer = null;
         try (Connection connection = db.getConnection();
-            PreparedStatement ps = connection.prepareStatement(sqlQuery.SELECT_WRITER_BY_POST)) {
+            PreparedStatement ps = connection.prepareStatement(SQLQuery.SELECT_WRITER_BY_POST)) {
 
             ps.setLong(1, post.getId());
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    writer = createWriter(rs);
+                    writer = mapper.createWriter(rs);
+                    writer.setPosts(postRepositry.findAllByWriterName(writer));
                 }
             }
             connection.commit();

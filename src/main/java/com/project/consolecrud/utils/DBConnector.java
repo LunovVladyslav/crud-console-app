@@ -10,13 +10,13 @@ import java.sql.SQLException;
 public class DBConnector {
 
     @Value("${spring.datasource.url}")
-    private String URL = "jdbc:mysql://localhost:3306/APPLICATION";
+    private String URL;
     @Value("${spring.datasource.driver-class-name}")
-    private String DRIVER = "com.mysql.cj.jdbc.Driver";
+    private String DRIVER;
     @Value("${spring.datasource.username}")
-    private String USERNAME = "root";
+    private String USERNAME;
     @Value("${spring.datasource.password}")
-    private String PASSWORD = "password";
+    private String PASSWORD;
 
 
     public Connection getConnection() throws SQLException {
