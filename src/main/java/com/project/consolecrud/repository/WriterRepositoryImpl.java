@@ -82,7 +82,7 @@ public class WriterRepositoryImpl implements WriterRepository{
     }
 
     @Override
-    public Writer update(Writer entity) {
+    public void update(Writer entity) {
         try (Connection connection = db.getConnection();
             PreparedStatement ps = connection.prepareStatement(SQLQuery.UPDATE_WRITER)) {
             ps.setString(1, entity.getFirstName());
@@ -93,7 +93,6 @@ public class WriterRepositoryImpl implements WriterRepository{
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-        return findById(entity.getId());
     }
 
     @Override

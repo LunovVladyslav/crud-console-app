@@ -2,7 +2,7 @@ package com.project.consolecrud.repository;
 
 import com.project.consolecrud.model.Writer;
 import com.project.consolecrud.utils.DBConnector;
-import com.project.consolecrud.utils.MapperTest;
+import com.project.consolecrud.utils.Mapper;
 import com.project.consolecrud.utils.SQLQuery;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,72 +15,107 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static com.project.consolecrud.utils.MapperTest.*;
 
 @ExtendWith(MockitoExtension.class)
 class WriterRepositoryImplTest {
     @InjectMocks
     WriterRepositoryImpl writerRepository;
     @Mock
-    Connection connection;
+    private Connection connection;
     @Mock
     private DBConnector db;
+    @Mock
+    private Mapper mapper;
+    @Mock
+    private ResultSet resultSet;
     @Mock
     private PreparedStatement preparedStatement;
     @Mock
     private PostRepositry postRepositry;
     @Mock
     private SQLQuery sqlQuery;
-    @Mock
-    private ResultSet resultSet;
-    @Mock
-    private MapperTest mapper;
+    private final String tableName = "writers";
 
-    private final String USER_FIRST_NAME = "name";
-    private final String USER_LAST_NAME = "lastName";
-    private final Long ID = 1L;
+    @Test
+    void testSave() throws SQLException {
+        Writer writer = createWriter();
 
-    @BeforeEach
-    void setup() throws SQLException {
         when(db.getConnection()).thenReturn(connection);
-    }
-
-    @Test
-    void shouldUpdate() throws SQLException {
+        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
         when(preparedStatement.executeUpdate()).thenReturn(1);
-        when(connection.prepareStatement(SQLQuery.UPDATE_WRITER)).thenReturn(preparedStatement);
-        writerRepository.update(getWriter());
-        verify(db).getConnection();
+
+        when(connection.prepareStatement(SQLQuery.SELECT_WRITER_BY_NAME)).thenReturn(preparedStatement);
+        when(preparedStatement.executeQuery()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(true).thenReturn(false);
+        when(mapper.createWriter(resultSet)).thenReturn(writer);
+
+        Writer result = writerRepository.save(writer);
+
+        verify(preparedStatement, times(2)).setString(1, writer.getFirstName());
+        verify(preparedStatement, times(2)).setString(2, writer.getLastName());
+        verify(preparedStatement, times(1)).executeUpdate();
+        verify(preparedStatement, times(1)).executeQuery();
+        verify(connection, times(2)).commit();
+
+        // Assertions
+        assertNotNull(result);
+        assertEquals("name", result.getFirstName());
+        assertEquals("lastName", result.getLastName());
     }
 
     @Test
-    void findById() throws SQLException {
-        when(connection.prepareStatement("statement")).thenReturn(preparedStatement);
-        when(sqlQuery.selectById("writers")).thenReturn("statement");
+    void testFindAll() throws SQLException {
+        List<Writer> writers = Collections.emptyList();
+
+        when(db.getConnection()).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
-        when(resultSet.next()).thenReturn(true);
-        when(mapper.createWriter()).thenReturn(getWriter());
+        when(resultSet.next()).thenReturn(false);
 
-        Writer writer = writerRepository.findById(ID);
 
-        verify(db).getConnection();
-        verify(resultSet).next();
-        verify(sqlQuery).selectById("writers");
-        assertEquals(USER_FIRST_NAME, writer.getFirstName());
-        assertEquals(USER_LAST_NAME, writer.getLastName());
-        assertEquals(ID, writer.getId());
+        List<Writer> result = writerRepository.findAll();
+
+        assertTrue(result.isEmpty());
+        verify(preparedStatement, times(1)).executeQuery();
+        verify(connection, times(1)).commit();
+
+    }
+
+    @Test
+    void testFindById() throws SQLException {
+        Writer writer = createWriter();
+        when(db.getConnection()).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+        when(preparedStatement.executeQuery()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(true).thenReturn(false);
+        when(mapper.createWriter(resultSet)).thenReturn(writer);
+
+        Writer result = writerRepository.findById(ID);
+        assertEquals(writer, result);
+        verify(connection, times(1)).commit();
+        verify(preparedStatement, times(1)).executeQuery();
+    }
+
+    @Test
+    void testUpdate() throws SQLException {
+        Writer writer = createWriter();
+        when(db.getConnection()).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+        when(preparedStatement.executeUpdate()).thenReturn(1);
+
+        writerRepository.update(writer);
+        verify(connection, times(1)).commit();
+        verify(db, times(1)).getConnection();
+        verify(connection, times(1)).prepareStatement(anyString());
+        verify(preparedStatement, times(1)).executeUpdate();
+
     }
 
 
-
-    private Writer getWriter() {
-        Writer writer = new Writer();
-        writer.setId(ID);
-        writer.setFirstName(USER_FIRST_NAME);
-        writer.setLastName(USER_LAST_NAME);
-        return writer;
-    }
 }

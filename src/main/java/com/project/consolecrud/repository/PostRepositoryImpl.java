@@ -119,7 +119,7 @@ public class PostRepositoryImpl implements PostRepositry {
 
 
     @Override
-    public Post update(Post entity) {
+    public void update(Post entity) {
         try (Connection connection = db.getConnection();
             PreparedStatement ps = connection.prepareStatement(SQLQuery.UPDATE_POST)) {
             ps.setString(1, entity.getContent());
@@ -131,7 +131,6 @@ public class PostRepositoryImpl implements PostRepositry {
         }
         Post post = findById(entity.getId());
         post.setLabels(labelRepository.findAllByPostId(post));
-        return post;
     }
 
 

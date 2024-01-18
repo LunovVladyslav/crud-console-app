@@ -136,7 +136,7 @@ public class LabelRepositoryImpl implements LabelRepository{
     }
 
     @Override
-    public Label update(Label entity) {
+    public void update(Label entity) {
         try (Connection connection = db.getConnection();
             PreparedStatement ps = connection.prepareStatement(SQLQuery.UPDATE_LABEL)) {
             ps.setString(1, entity.getName());
@@ -147,7 +147,6 @@ public class LabelRepositoryImpl implements LabelRepository{
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-        return findById(entity.getId());
     }
 
     @Override

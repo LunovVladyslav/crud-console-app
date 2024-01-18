@@ -6,6 +6,6 @@ public interface GenericRepository<T, ID> {
     T save(T entity);
     List<T> findAll();
     T findById(ID id);
-    T update(T entity);
+    void update(T entity);
     void deleteById(ID id);
 }

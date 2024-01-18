@@ -3,8 +3,8 @@ package com.project.consolecrud.service;
 import com.project.consolecrud.model.Post;
 import com.project.consolecrud.model.Writer;
 import com.project.consolecrud.repository.WriterRepository;
-import com.project.consolecrud.utils.MapperTest;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,18 +19,23 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class WriterServiceTest {
-
     @InjectMocks
     WriterService writerService;
     @Mock
     WriterRepository writerRepository;
 
+    private Writer writer;
+    private Post post;
+
+    @BeforeEach
+    void setUp() {
+        writer = createWriter();
+        post = createPost();
+    }
+
     @Test
     void shouldCreateNewWriter() {
-        Writer writer = MapperTest.createWriter();
-
-        doNothing().when(writerRepository).save(writer);
-
+        when(writerRepository.save(writer)).thenReturn(writer);
         writerService.addWriter(writer);
 
         verify(writerRepository).save(writer);
@@ -38,7 +43,6 @@ class WriterServiceTest {
 
     @Test
     void shouldFindByName() {
-        Writer writer = MapperTest.createWriter();
 
         when(writerRepository.findByName(FIRST_NAME, LAST_NAME)).thenReturn(writer);
 
@@ -52,15 +56,13 @@ class WriterServiceTest {
     void shouldFindAllWriters_emptyList() {
         when(writerRepository.findAll()).thenReturn(Collections.emptyList());
 
-        List<Writer> writers = writerService.findAll();
+        List<Writer> result = writerService.findAll();
 
-        Assertions.assertTrue(writers.isEmpty());
+        Assertions.assertTrue(result.isEmpty());
     }
 
     @Test
     void shouldFindByPost() {
-        Post post = MapperTest.createPost();
-        Writer writer = MapperTest.createWriter();
 
         when(writerRepository.findWriterByPost(post)).thenReturn(writer);
 
@@ -71,8 +73,19 @@ class WriterServiceTest {
     }
 
     @Test
+    void shouldUpdate() {
+        writer.setFirstName("anotherName");
+
+        doNothing().when(writerRepository).update(writer);
+
+        writerService.updateWriter(writer);
+        Assertions.assertNotEquals(FIRST_NAME, writer.getFirstName());
+        verify(writerRepository).update(writer);
+    }
+
+    @Test
     void deleteWriterById() {
-        doNothing().when(writerRepository).deleteById(MapperTest.ID);
+        doNothing().when(writerRepository).deleteById(ID);
 
         writerService.deleteWriterById(ID);
 
