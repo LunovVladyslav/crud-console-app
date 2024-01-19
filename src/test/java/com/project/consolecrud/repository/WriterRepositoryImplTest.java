@@ -41,10 +41,18 @@ class WriterRepositoryImplTest {
     @Mock
     private SQLQuery sqlQuery;
     private final String tableName = "writers";
+    private Writer writer;
+    private List<Writer> writers;
+
+    @BeforeEach
+    void setUp() {
+        writer = createWriter();
+        writers = Collections.emptyList();
+
+    }
 
     @Test
     void testSave() throws SQLException {
-        Writer writer = createWriter();
 
         when(db.getConnection()).thenReturn(connection);
         when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
@@ -71,7 +79,6 @@ class WriterRepositoryImplTest {
 
     @Test
     void testFindAll() throws SQLException {
-        List<Writer> writers = Collections.emptyList();
 
         when(db.getConnection()).thenReturn(connection);
         when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
@@ -89,7 +96,6 @@ class WriterRepositoryImplTest {
 
     @Test
     void testFindById() throws SQLException {
-        Writer writer = createWriter();
         when(db.getConnection()).thenReturn(connection);
         when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
         when(preparedStatement.executeQuery()).thenReturn(resultSet);
@@ -104,7 +110,6 @@ class WriterRepositoryImplTest {
 
     @Test
     void testUpdate() throws SQLException {
-        Writer writer = createWriter();
         when(db.getConnection()).thenReturn(connection);
         when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
         when(preparedStatement.executeUpdate()).thenReturn(1);
@@ -114,7 +119,6 @@ class WriterRepositoryImplTest {
         verify(db, times(1)).getConnection();
         verify(connection, times(1)).prepareStatement(anyString());
         verify(preparedStatement, times(1)).executeUpdate();
-
     }
 
 
